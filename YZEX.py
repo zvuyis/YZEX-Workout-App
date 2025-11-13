@@ -1,12 +1,10 @@
-# YZEX.py - Streamlit version with fully centered layout, buttons, and clickable links
+# YZEX.py - Streamlit full version with video recording
 
 import streamlit as st
 import pandas as pd
 
-# ----- כותרת ראשית -----
+# ----- כותרת -----
 st.set_page_config(page_title="YZ Exercise", layout="wide")
-
-# כותרת ממורכזת
 st.markdown("<h1 style='text-align: center;'>YZ Exercise - Workout Generator</h1>", unsafe_allow_html=True)
 
 # ----- טעינת מאגר -----
@@ -23,7 +21,6 @@ def load_exercises():
         return pd.DataFrame()
 
 exercises_df = load_exercises()
-
 if exercises_df.empty:
     st.warning("המאגר ריק. ודא שהקובץ YZEX.xlsx נמצא באותה תיקיה.")
     st.stop()
@@ -94,33 +91,21 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
-# ----- פונקציה להוספת לינקים -----
-def make_links_clickable(df, link_col):
-    if link_col:
-        df = df.copy()
-        df[link_col] = df[link_col].apply(lambda x: f"<a href='{x}' target='_blank'>🔗 פתח קישור</a>" if isinstance(x, str) and x.startswith("http") else "")
-    return df
-
 # ----- כפתור "צור אימון" ממורכז -----
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
-    create_workout = st.button("Create New Workout / צור אימון חדש")
-
-if create_workout:
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+if st.button("Create Workout / צור אימון"):
     workout_df = generate_workout(df_filtered, num_exercises)
-    workout_df = make_links_clickable(workout_df, link_col)
 
-    # הפוך את סדר העמודות כך שהלינק יהיה ראשון
+    # ----- הפיכת סדר עמודות - לינק ראשון -----
     if link_col and link_col in workout_df.columns:
         cols = [link_col] + [c for c in workout_df.columns if c != link_col]
         workout_df = workout_df[cols]
 
-    # כותרת וטקסט ממורכזים
-    st.markdown("<h3 style='text-align: center;'>Workout Table / טבלת אימון</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.</p>", unsafe_allow_html=True)
+    st.subheader("Workout Table / טבלת אימון")
+    st.markdown("<div style='text-align: center;'>טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.</div>", unsafe_allow_html=True)
 
-    # ----- יצירת טבלה HTML ממורכזת עם לינקים -----
-    table_html = "<div style='text-align:center;'><table style='margin-left:auto; margin-right:auto; border-collapse: collapse; direction: rtl;'>"
+    # ----- יצירת טבלת HTML עם לינקים -----
+    table_html = "<table style='margin-left:auto;margin-right:auto;border-collapse: collapse;'>"
     # כותרות
     table_html += "<tr>"
     for col in workout_df.columns:
@@ -132,17 +117,26 @@ if create_workout:
         table_html += "<tr>"
         for col in workout_df.columns:
             val = row[col]
+            if col == link_col and isinstance(val, str) and val.startswith("http"):
+                val = f"<a href='{val}' target='_blank'>🔗 פתח קישור</a>"
             table_html += f"<td style='border: 1px solid black; padding: 8px; text-align:center'>{val}</td>"
         table_html += "</tr>"
-
-    table_html += "</table></div>"
+    table_html += "</table>"
     st.markdown(table_html, unsafe_allow_html=True)
 
-    # ----- כפתור רענון במרכז -----
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        if st.button("Refresh / רענן"):
-            st.experimental_rerun()
+    # ----- מצלמה -----
+    st.subheader("Record Your Workout / צלם את האימון שלך")
+    try:
+        video_file = st.camera_input("Press to record your workout / לחץ כדי להקליט")
+        if video_file:
+            with open("user_workout.mp4", "wb") as f:
+                f.write(video_file.getvalue())
+            st.success("הסרטון נשמר!")
+            st.video("user_workout.mp4")
+    except Exception:
+        st.warning("אין מצלמה זמינה במכשיר זה.")
 
-
-
+    # כפתור רענון ממורכז
+    if st.button("Refresh / רענן"):
+        st.experimental_rerun()
+st.markdown("</div>", unsafe_allow_html=True)
