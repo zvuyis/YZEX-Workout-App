@@ -1,4 +1,4 @@
-# YZEX.py - Streamlit version with clickable links in HTML table
+# YZEX.py - Streamlit version with clickable links, RTL table, and link first column
 
 import streamlit as st
 import pandas as pd
@@ -96,14 +96,19 @@ def generate_workout(df_filtered, num_exercises):
 if st.button("Create Workout / צור אימון"):
     workout_df = generate_workout(df_filtered, num_exercises)
 
+    # הפוך את סדר העמודות כדי שהלינק יהיה ראשון
+    if link_col and link_col in workout_df.columns:
+        cols = [link_col] + [c for c in workout_df.columns if c != link_col]
+        workout_df = workout_df[cols]
+
     st.subheader("Workout Table / טבלת אימון")
     st.markdown(
         "טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.",
         unsafe_allow_html=True
     )
 
-    # ----- יצירת טבלה HTML עם לינקים -----
-    table_html = "<table style='width:100%; border-collapse: collapse;'>"
+    # ----- יצירת טבלה HTML עם לינקים ו-RTL -----
+    table_html = "<table style='width:100%; border-collapse: collapse; direction: rtl;'>"
     # כותרות
     table_html += "<tr>"
     for col in workout_df.columns:
