@@ -1,4 +1,4 @@
-# YZEX.py - Streamlit version with button, centered layout, and clickable links
+# YZEX.py - Streamlit version with clean table, button, and clickable links
 
 import streamlit as st
 import pandas as pd
@@ -50,6 +50,7 @@ if df_filtered.empty:
     st.warning("לא נמצאו תרגילים עם הבחירות שלך.")
     st.stop()
 
+# ----- זיהוי עמודות -----
 possible_muscle_cols = ['קבוצת שריר', 'muscle group', 'Muscle', 'Muscle_Group']
 possible_name_cols = ['שם', 'תרגיל', 'Name', 'Exercise']
 possible_link_cols = ['לינק', 'קישור', 'Link', 'URL']
@@ -91,20 +92,24 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
+# ----- פונקציה להוספת לינקים לחיצים -----
+def make_links_clickable(df, link_col):
+    if link_col:
+        df = df.copy()
+        df[link_col] = df[link_col].apply(lambda x: f"[🔗 פתח קישור]({x})" if isinstance(x, str) and x.startswith("http") else "")
+    return df
+
 # ----- כפתור "צור אימון" -----
 if st.button("Create Workout / צור אימון"):
     workout_df = generate_workout(df_filtered, num_exercises)
+    workout_df = make_links_clickable(workout_df, link_col)
 
     st.subheader("Workout Table / טבלת אימון")
-    for i, row in workout_df.iterrows():
-        line = "<div style='text-align: center;'>"
-        for col in workout_df.columns:
-            val = row[col]
-            if col == link_col and isinstance(val, str) and val.startswith("http"):
-                val = f"<a href='{val}' target='_blank'>🔗 פתח קישור</a>"
-            line += f"<b>{col}</b>: {val} &nbsp;&nbsp;|&nbsp;&nbsp; "
-        line += "</div>"
-        st.markdown(line, unsafe_allow_html=True)
+    st.markdown(
+        "טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.",
+        unsafe_allow_html=True
+    )
+    st.dataframe(workout_df, use_container_width=True)
 
     # כפתור רענון
     if st.button("Refresh / רענן"):
