@@ -1,4 +1,4 @@
-# YZEX.py - Streamlit version of YZ Exercise (interactive with clickable links)
+# YZEX.py - Streamlit version with button, centered layout, and clickable links
 
 import streamlit as st
 import pandas as pd
@@ -8,7 +8,7 @@ st.set_page_config(page_title="YZ Exercise", layout="wide")
 st.title("YZ Exercise - Workout Generator")
 
 # ----- טעינת מאגר -----
-file_path = "YZEX.xlsx"  # קובץ Excel צריך להיות באותה תיקיה עם הקובץ
+file_path = "YZEX.xlsx"
 
 @st.cache_data
 def load_exercises():
@@ -27,20 +27,17 @@ if exercises_df.empty:
     st.stop()
 
 # ----- צד שמאל: הגדרות -----
-st.sidebar.header("Settings")
+with st.sidebar:
+    st.header("Settings")
+    num_exercises = st.selectbox("NOE / כמות תרגילים", [3,4,5,6,7,8], index=2)
 
-# כמות תרגילים
-num_exercises = st.sidebar.selectbox("NOE / כמות תרגילים", [3,4,5,6,7,8], index=2)
+    st.subheader("Level / רמה")
+    difficulty_options = ["קל", "בינוני", "קשה"]
+    selected_difficulty = [diff for diff in difficulty_options if st.checkbox(diff, value=True)]
 
-# רמת קושי
-st.sidebar.subheader("Level / רמה")
-difficulty_options = ["קל", "בינוני", "קשה"]
-selected_difficulty = [diff for diff in difficulty_options if st.sidebar.checkbox(diff, value=True)]
-
-# ציוד
-st.sidebar.subheader("Equipment / ציוד")
-equipment_options = ["משקל גוף", "TRX", "דאמבלים", "גומיה"]
-selected_equipment = [eq for eq in equipment_options if st.sidebar.checkbox(eq, value=True)]
+    st.subheader("Equipment / ציוד")
+    equipment_options = ["משקל גוף", "TRX", "דאמבלים", "גומיה"]
+    selected_equipment = [eq for eq in equipment_options if st.checkbox(eq, value=True)]
 
 # ----- פילטר -----
 df_filtered = exercises_df.copy()
@@ -53,7 +50,6 @@ if df_filtered.empty:
     st.warning("לא נמצאו תרגילים עם הבחירות שלך.")
     st.stop()
 
-# עמודות עיקריות
 possible_muscle_cols = ['קבוצת שריר', 'muscle group', 'Muscle', 'Muscle_Group']
 possible_name_cols = ['שם', 'תרגיל', 'Name', 'Exercise']
 possible_link_cols = ['לינק', 'קישור', 'Link', 'URL']
@@ -72,7 +68,6 @@ def generate_workout(df_filtered, num_exercises):
     workout = []
     used_exercises = set()
     used_muscles = set()
-
     for _, ex in df_shuffled.iterrows():
         muscle = ex[muscle_col]
         name = ex[name_col]
@@ -82,7 +77,6 @@ def generate_workout(df_filtered, num_exercises):
             used_muscles.add(muscle)
         if len(workout) >= num_exercises:
             break
-
     if len(workout) < num_exercises:
         remaining_count = num_exercises - len(workout)
         remaining_choices = df_filtered[~df_filtered[name_col].isin(used_exercises)]
@@ -97,20 +91,21 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
-workout_df = generate_workout(df_filtered, num_exercises)
+# ----- כפתור "צור אימון" -----
+if st.button("Create Workout / צור אימון"):
+    workout_df = generate_workout(df_filtered, num_exercises)
 
-# ----- הצגת טבלה עם קישורים לחיצים -----
-st.subheader("Workout Table / טבלת אימון")
+    st.subheader("Workout Table / טבלת אימון")
+    for i, row in workout_df.iterrows():
+        line = "<div style='text-align: center;'>"
+        for col in workout_df.columns:
+            val = row[col]
+            if col == link_col and isinstance(val, str) and val.startswith("http"):
+                val = f"<a href='{val}' target='_blank'>🔗 פתח קישור</a>"
+            line += f"<b>{col}</b>: {val} &nbsp;&nbsp;|&nbsp;&nbsp; "
+        line += "</div>"
+        st.markdown(line, unsafe_allow_html=True)
 
-for i, row in workout_df.iterrows():
-    line = ""
-    for col in workout_df.columns:
-        val = row[col]
-        if col == link_col and isinstance(val, str) and val.startswith("http"):
-            val = f"[🔗 פתח קישור]({val})"
-        line += f"**{col}**: {val}  |  "
-    st.markdown(line)
-
-# ----- כפתור לרענון -----
-if st.button("Refresh / רענן"):
-    st.experimental_rerun()
+    # כפתור רענון
+    if st.button("Refresh / רענן"):
+        st.experimental_rerun()
