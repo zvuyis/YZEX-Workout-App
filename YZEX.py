@@ -1,11 +1,13 @@
-# YZEX.py - Streamlit version with centered table, button, and clickable links
+# YZEX.py - Streamlit version with fully centered layout, buttons, and clickable links
 
 import streamlit as st
 import pandas as pd
 
 # ----- כותרת ראשית -----
 st.set_page_config(page_title="YZ Exercise", layout="wide")
-st.title("YZ Exercise - Workout Generator")
+
+# כותרת ממורכזת
+st.markdown("<h1 style='text-align: center;'>YZ Exercise - Workout Generator</h1>", unsafe_allow_html=True)
 
 # ----- טעינת מאגר -----
 file_path = "YZEX.xlsx"
@@ -92,20 +94,21 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
-# ----- כפתור "צור אימון" -----
-if st.button("Create Workout / צור אימון"):
+# ----- כפתור "צור אימון" במרכז -----
+create_workout = st.button("Create Workout / צור אימון")
+if create_workout:
     workout_df = generate_workout(df_filtered, num_exercises)
 
-    # הפוך את סדר העמודות כדי שהלינק יהיה ראשון
+    # הפוך את סדר העמודות כך שהלינק יהיה ראשון
     if link_col and link_col in workout_df.columns:
         cols = [link_col] + [c for c in workout_df.columns if c != link_col]
         workout_df = workout_df[cols]
 
-    # כותרת וטקסט במרכז
+    # כותרת וטקסט ממורכזים
     st.markdown("<h3 style='text-align: center;'>Workout Table / טבלת אימון</h3>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.</p>", unsafe_allow_html=True)
 
-    # ----- יצירת טבלה HTML עם לינקים -----
+    # ----- יצירת טבלה HTML ממורכזת עם לינקים -----
     table_html = "<div style='text-align:center;'><table style='margin-left:auto; margin-right:auto; border-collapse: collapse; direction: rtl;'>"
     # כותרות
     table_html += "<tr>"
@@ -126,6 +129,12 @@ if st.button("Create Workout / צור אימון"):
     table_html += "</table></div>"
     st.markdown(table_html, unsafe_allow_html=True)
 
-    # כפתור רענון
-    if st.button("Refresh / רענן"):
-        st.experimental_rerun()
+    # ----- כפתור רענון במרכז -----
+    refresh_html = """
+        <div style='text-align: center; margin-top: 10px;'>
+            <form action="">
+                <input type="submit" value="Refresh / רענן" style="font-size:16px; padding:6px 12px;">
+            </form>
+        </div>
+    """
+    st.markdown(refresh_html, unsafe_allow_html=True)
