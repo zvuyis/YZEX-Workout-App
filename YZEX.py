@@ -94,13 +94,21 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
+# ----- פונקציה להוספת לינקים -----
+def make_links_clickable(df, link_col):
+    if link_col:
+        df = df.copy()
+        df[link_col] = df[link_col].apply(lambda x: f"<a href='{x}' target='_blank'>🔗 פתח קישור</a>" if isinstance(x, str) and x.startswith("http") else "")
+    return df
+
 # ----- כפתור "צור אימון" ממורכז -----
-st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-create_workout = st.button("Create Workout / צור אימון")
-st.markdown("</div>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    create_workout = st.button("Create Workout / צור אימון")
 
 if create_workout:
     workout_df = generate_workout(df_filtered, num_exercises)
+    workout_df = make_links_clickable(workout_df, link_col)
 
     # הפוך את סדר העמודות כך שהלינק יהיה ראשון
     if link_col and link_col in workout_df.columns:
@@ -124,8 +132,6 @@ if create_workout:
         table_html += "<tr>"
         for col in workout_df.columns:
             val = row[col]
-            if col == link_col and isinstance(val, str) and val.startswith("http"):
-                val = f"<a href='{val}' target='_blank'>🔗 פתח קישור</a>"
             table_html += f"<td style='border: 1px solid black; padding: 8px; text-align:center'>{val}</td>"
         table_html += "</tr>"
 
@@ -133,11 +139,7 @@ if create_workout:
     st.markdown(table_html, unsafe_allow_html=True)
 
     # ----- כפתור רענון במרכז -----
-    refresh_html = """
-        <div style='text-align: center; margin-top: 10px;'>
-            <form action="">
-                <input type="submit" value="Refresh / רענן" style="font-size:16px; padding:6px 12px;">
-            </form>
-        </div>
-    """
-    st.markdown(refresh_html, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        if st.button("Refresh / רענן"):
+            st.experimental_rerun()
