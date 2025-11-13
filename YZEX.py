@@ -1,4 +1,4 @@
-# YZEX.py - Streamlit version with clickable links, RTL table, and link first column
+# YZEX.py - Streamlit version with centered table, button, and clickable links
 
 import streamlit as st
 import pandas as pd
@@ -101,14 +101,12 @@ if st.button("Create Workout / צור אימון"):
         cols = [link_col] + [c for c in workout_df.columns if c != link_col]
         workout_df = workout_df[cols]
 
-    st.subheader("Workout Table / טבלת אימון")
-    st.markdown(
-        "טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.",
-        unsafe_allow_html=True
-    )
+    # כותרת וטקסט במרכז
+    st.markdown("<h3 style='text-align: center;'>Workout Table / טבלת אימון</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.</p>", unsafe_allow_html=True)
 
-    # ----- יצירת טבלה HTML עם לינקים ו-RTL -----
-    table_html = "<table style='width:100%; border-collapse: collapse; direction: rtl;'>"
+    # ----- יצירת טבלה HTML עם לינקים -----
+    table_html = "<div style='text-align:center;'><table style='margin-left:auto; margin-right:auto; border-collapse: collapse; direction: rtl;'>"
     # כותרות
     table_html += "<tr>"
     for col in workout_df.columns:
@@ -125,7 +123,7 @@ if st.button("Create Workout / צור אימון"):
             table_html += f"<td style='border: 1px solid black; padding: 8px; text-align:center'>{val}</td>"
         table_html += "</tr>"
 
-    table_html += "</table>"
+    table_html += "</table></div>"
     st.markdown(table_html, unsafe_allow_html=True)
 
     # כפתור רענון
