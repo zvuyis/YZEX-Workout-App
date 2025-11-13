@@ -94,8 +94,11 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
-# ----- כפתור "צור אימון" במרכז -----
+# ----- כפתור "צור אימון" ממורכז -----
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 create_workout = st.button("Create Workout / צור אימון")
+st.markdown("</div>", unsafe_allow_html=True)
+
 if create_workout:
     workout_df = generate_workout(df_filtered, num_exercises)
 
