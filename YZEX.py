@@ -104,7 +104,7 @@ def make_links_clickable(df, link_col):
 # ----- כפתור "צור אימון" ממורכז -----
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
-    create_workout = st.button("Create Workout / צור אימון")
+    create_workout = st.button("Create New Workout / צור אימון חדש")
 
 if create_workout:
     workout_df = generate_workout(df_filtered, num_exercises)
@@ -143,3 +143,4 @@ if create_workout:
     with col2:
         if st.button("Refresh / רענן"):
             st.experimental_rerun()
+
