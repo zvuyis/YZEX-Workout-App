@@ -1,4 +1,4 @@
-# YZEX.py - Streamlit version of YZ Exercise
+# YZEX.py - Streamlit version of YZ Exercise (interactive with clickable links)
 
 import streamlit as st
 import pandas as pd
@@ -66,47 +66,50 @@ if not muscle_col or not name_col:
     st.error("לא נמצאו העמודות הדרושות בקובץ.")
     st.stop()
 
-# ----- יצירת אימון -----
-df_shuffled = df_filtered.sample(frac=1)
-workout = []
-used_exercises = set()
-used_muscles = set()
+# ----- פונקציה ליצירת אימון -----
+def generate_workout(df_filtered, num_exercises):
+    df_shuffled = df_filtered.sample(frac=1)
+    workout = []
+    used_exercises = set()
+    used_muscles = set()
 
-for _, ex in df_shuffled.iterrows():
-    muscle = ex[muscle_col]
-    name = ex[name_col]
-    if name not in used_exercises and muscle not in used_muscles:
-        workout.append(ex)
-        used_exercises.add(name)
-        used_muscles.add(muscle)
-    if len(workout) >= num_exercises:
-        break
+    for _, ex in df_shuffled.iterrows():
+        muscle = ex[muscle_col]
+        name = ex[name_col]
+        if name not in used_exercises and muscle not in used_muscles:
+            workout.append(ex)
+            used_exercises.add(name)
+            used_muscles.add(muscle)
+        if len(workout) >= num_exercises:
+            break
 
-if len(workout) < num_exercises:
-    remaining_count = num_exercises - len(workout)
-    remaining_choices = df_filtered[~df_filtered[name_col].isin(used_exercises)]
-    if not remaining_choices.empty:
-        extra = remaining_choices.sample(min(remaining_count, len(remaining_choices)))
-        for _, ex in extra.iterrows():
-            if len(workout) >= num_exercises:
-                break
-            name = ex[name_col]
-            if name not in used_exercises:
-                workout.append(ex)
-                used_exercises.add(name)
+    if len(workout) < num_exercises:
+        remaining_count = num_exercises - len(workout)
+        remaining_choices = df_filtered[~df_filtered[name_col].isin(used_exercises)]
+        if not remaining_choices.empty:
+            extra = remaining_choices.sample(min(remaining_count, len(remaining_choices)))
+            for _, ex in extra.iterrows():
+                if len(workout) >= num_exercises:
+                    break
+                name = ex[name_col]
+                if name not in used_exercises:
+                    workout.append(ex)
+                    used_exercises.add(name)
+    return pd.DataFrame(workout)
 
-workout_df = pd.DataFrame(workout)
+workout_df = generate_workout(df_filtered, num_exercises)
 
-# ----- הצגת טבלה עם לינקים -----
-def make_clickable(val):
-    if link_col and isinstance(val, str) and val.startswith("http"):
-        return f"[🔗 פתח קישור]({val})"
-    return val
+# ----- הצגת טבלה עם קישורים לחיצים -----
+st.subheader("Workout Table / טבלת אימון")
 
-if link_col:
-    workout_df[link_col] = workout_df[link_col].apply(make_clickable)
-
-st.dataframe(workout_df, use_container_width=True)
+for i, row in workout_df.iterrows():
+    line = ""
+    for col in workout_df.columns:
+        val = row[col]
+        if col == link_col and isinstance(val, str) and val.startswith("http"):
+            val = f"[🔗 פתח קישור]({val})"
+        line += f"**{col}**: {val}  |  "
+    st.markdown(line)
 
 # ----- כפתור לרענון -----
 if st.button("Refresh / רענן"):
