@@ -1,4 +1,4 @@
-# YZEX.py - Streamlit version with clean table, button, and clickable links
+# YZEX.py - Streamlit version with clickable links in HTML table
 
 import streamlit as st
 import pandas as pd
@@ -92,24 +92,36 @@ def generate_workout(df_filtered, num_exercises):
                     used_exercises.add(name)
     return pd.DataFrame(workout)
 
-# ----- פונקציה להוספת לינקים לחיצים -----
-def make_links_clickable(df, link_col):
-    if link_col:
-        df = df.copy()
-        df[link_col] = df[link_col].apply(lambda x: f"[🔗 פתח קישור]({x})" if isinstance(x, str) and x.startswith("http") else "")
-    return df
-
 # ----- כפתור "צור אימון" -----
 if st.button("Create Workout / צור אימון"):
     workout_df = generate_workout(df_filtered, num_exercises)
-    workout_df = make_links_clickable(workout_df, link_col)
 
     st.subheader("Workout Table / טבלת אימון")
     st.markdown(
         "טבלת האימון נוצרה לפי הבחירות שלך. לחץ על 🔗 כדי לפתוח לינק למדריך תרגיל.",
         unsafe_allow_html=True
     )
-    st.dataframe(workout_df, use_container_width=True)
+
+    # ----- יצירת טבלה HTML עם לינקים -----
+    table_html = "<table style='width:100%; border-collapse: collapse;'>"
+    # כותרות
+    table_html += "<tr>"
+    for col in workout_df.columns:
+        table_html += f"<th style='border: 1px solid black; padding: 8px; text-align:center'>{col}</th>"
+    table_html += "</tr>"
+
+    # שורות
+    for _, row in workout_df.iterrows():
+        table_html += "<tr>"
+        for col in workout_df.columns:
+            val = row[col]
+            if col == link_col and isinstance(val, str) and val.startswith("http"):
+                val = f"<a href='{val}' target='_blank'>🔗 פתח קישור</a>"
+            table_html += f"<td style='border: 1px solid black; padding: 8px; text-align:center'>{val}</td>"
+        table_html += "</tr>"
+
+    table_html += "</table>"
+    st.markdown(table_html, unsafe_allow_html=True)
 
     # כפתור רענון
     if st.button("Refresh / רענן"):
