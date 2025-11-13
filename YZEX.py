@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 
 # ----- כותרת ראשית -----
-st.set_page_config(page_title="YZ Exercise", layout="wide")
+st.set_page_config(page_title="YZ Exercise", layout="narrow")
 
 # כותרת ממורכזת
 st.markdown("<h1 style='text-align: center;'>YZ Exercise - Workout Generator</h1>", unsafe_allow_html=True)
@@ -143,4 +143,5 @@ if create_workout:
     with col2:
         if st.button("Refresh / רענן"):
             st.experimental_rerun()
+
 
