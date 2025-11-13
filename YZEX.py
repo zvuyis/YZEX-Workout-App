@@ -1,14 +1,14 @@
-# yzex_app.py
+# YZEX.py - Streamlit version of YZ Exercise
+
 import streamlit as st
 import pandas as pd
-import webbrowser
 
 # ----- כותרת ראשית -----
 st.set_page_config(page_title="YZ Exercise", layout="wide")
 st.title("YZ Exercise - Workout Generator")
 
 # ----- טעינת מאגר -----
-file_path = "YZEX.xlsx"  # קובץ Excel צריך להיות באותו תיקיה עם הקובץ
+file_path = "YZEX.xlsx"  # קובץ Excel צריך להיות באותה תיקיה עם הקובץ
 
 @st.cache_data
 def load_exercises():
@@ -97,7 +97,7 @@ if len(workout) < num_exercises:
 
 workout_df = pd.DataFrame(workout)
 
-# ----- הצגת טבלה -----
+# ----- הצגת טבלה עם לינקים -----
 def make_clickable(val):
     if link_col and isinstance(val, str) and val.startswith("http"):
         return f"[🔗 פתח קישור]({val})"
